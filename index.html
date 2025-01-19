@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>موقع الاستبيان</title>
+</head>
+<body>
+    <h1>موقع الاستبيان</h1>
+    <textarea id="text-input" placeholder="الصق النص الدراسي هنا..."></textarea>
+    <button onclick="generateQuestions()">توليد الأسئلة</button>
+    
+    <div id="questions-container"></div>
+
+    <script>
+        async function generateQuestions() {
+            const text = document.getElementById("text-input").value;
+            const response = await fetch("/generate_questions", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ text: text }),
+            });
+            const questions = await response.json();
+            displayQuestions(questions);
+        }
+
+        function displayQuestions(questions) {
+            const container = document.getElementById("questions-container");
+            container.innerHTML = "";  // مسح المحتوى القديم
+
+            questions.forEach((question, index) => {
+                const questionDiv = document.createElement("div");
+                questionDiv.className = "question";
+                questionDiv.innerHTML = `
+                    <p><strong>السؤال ${index + 1}:</strong> ${question["question"]}</p>
+                    <button onclick="checkAnswer('${question["answer"]}', this)">صح</button>
+                    <button onclick="checkAnswer('${question["answer"]}', this)">غلط</button>
+                `;
+                container.appendChild(questionDiv);
+            });
+        }
+
+        function checkAnswer(correctAnswer, button) {
+            if (button.textContent === correctAnswer) {
+                alert("إجابة صحيحة!");
+            } else {
+                alert("إجابة خاطئة!");
+            }
+        }
+    </script>
+</body>
+</html>
